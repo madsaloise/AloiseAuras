@@ -76,6 +76,9 @@ end
 --------------------------------------------------------------------------------
 -- Trainer scan + buy
 --------------------------------------------------------------------------------
+-- Names already bought this trainer visit, cleared on TRAINER_SHOW.
+local attemptedThisVisit = {}
+
 local function EnsureAvailableFilter()
     -- Some clients hide "unavailable" / "used" by default; make sure available
     -- services are shown so GetNumTrainerServices returns them.
@@ -91,24 +94,22 @@ local function BuyMatchingServices()
 
     EnsureAvailableFilter()
 
+    -- Single forward pass. The service list only refreshes on TRAINER_UPDATE,
+    -- not synchronously after a buy, so a restart loop would re-buy the same
+    -- index forever (this crashed the client). attemptedThisVisit stops us from
+    -- re-buying across the TRAINER_UPDATE events that each purchase triggers.
     local bought = 0
-    local scanned = true
-    -- Loop: each buy shifts indices, so restart until a full pass finds nothing.
-    while scanned do
-        scanned = false
-        local n = GetNumTrainerServices() or 0
-        for i = 1, n do
-            local name, _, category = GetTrainerServiceInfo(i)
-            if name and category == "available" then
-                local norm = NormalizeName(name)
-                if norm and Contains(norm) then
-                    local ok = pcall(BuyTrainerService, i)
-                    if ok then
-                        bought = bought + 1
-                        print(("|cff33ff99AloiseAuras|r: trained %s."):format(name))
-                        scanned = true
-                        break
-                    end
+    local n = GetNumTrainerServices() or 0
+    for i = 1, n do
+        -- This build returns name, category, icon (category is the 2nd value).
+        local name, category = GetTrainerServiceInfo(i)
+        if name and category == "available" then
+            local norm = NormalizeName(name)
+            if norm and Contains(norm) and not attemptedThisVisit[norm] then
+                attemptedThisVisit[norm] = true
+                if pcall(BuyTrainerService, i) then
+                    bought = bought + 1
+                    print(("|cff33ff99AloiseAuras|r: trained %s."):format(name))
                 end
             end
         end
@@ -125,7 +126,10 @@ end
 local ev = CreateFrame("Frame")
 ev:RegisterEvent("TRAINER_SHOW")
 ev:RegisterEvent("TRAINER_UPDATE")
-ev:SetScript("OnEvent", function()
+ev:SetScript("OnEvent", function(_, event)
+    if event == "TRAINER_SHOW" then
+        wipe(attemptedThisVisit)
+    end
     BuyMatchingServices()
 end)
 
@@ -151,7 +155,7 @@ function M.OnInit(dbref)
     end
 end
 
-local enableCB, addBox, listFS, spellCheckboxes
+local enableCB, listFS, spellCheckboxes
 
 local function RefreshList()
     if listFS then
@@ -168,16 +172,43 @@ local function RefreshList()
     end
 end
 
-local function BuildClassSpellList(parent, anchor)
-    if not (wt and wt.SpellsByLevel) then return anchor end
+local spellListPopup
 
-    local header = parent:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    header:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -16)
-    header:SetText("Class spell list (check to auto-buy):")
+local function BuildSpellListPopup()
+    if spellListPopup then return spellListPopup end
+    if not (wt and wt.SpellsByLevel) then return nil end
 
-    local scroll = CreateFrame("ScrollFrame", "AloiseAurasTrainerScroll", parent, "UIPanelScrollFrameTemplate")
-    scroll:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 0, -6)
-    scroll:SetSize(420, 240)
+    local f = CreateFrame("Frame", "AloiseAurasTrainerSpellPopup", UIParent, "BackdropTemplate")
+    f:SetSize(460, 420)
+    f:SetPoint("CENTER")
+    f:SetFrameStrata("DIALOG")
+    f:SetToplevel(true)
+    f:SetMovable(true)
+    f:EnableMouse(true)
+    f:RegisterForDrag("LeftButton")
+    f:SetScript("OnDragStart", f.StartMoving)
+    f:SetScript("OnDragStop", f.StopMovingOrSizing)
+    f:SetClampedToScreen(true)
+    if f.SetBackdrop then
+        f:SetBackdrop({
+            bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+            edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+            tile = true, tileSize = 32, edgeSize = 32,
+            insets = { left = 8, right = 8, top = 8, bottom = 8 },
+        })
+    end
+    f:Hide()
+
+    local title = f:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    title:SetPoint("TOP", 0, -14)
+    title:SetText("Class spell list (check to auto-buy)")
+
+    local close = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+    close:SetPoint("TOPRIGHT", -6, -6)
+
+    local scroll = CreateFrame("ScrollFrame", "AloiseAurasTrainerScroll", f, "UIPanelScrollFrameTemplate")
+    scroll:SetPoint("TOPLEFT", 16, -40)
+    scroll:SetPoint("BOTTOMRIGHT", -34, 16)
 
     local child = CreateFrame("Frame", nil, scroll)
     child:SetSize(400, 1)
@@ -225,7 +256,10 @@ local function BuildClassSpellList(parent, anchor)
     end
 
     child:SetHeight(math.max(y, 1))
-    return scroll
+    RefreshList()
+
+    spellListPopup = f
+    return f
 end
 
 function M.BuildOptions(panel, anchor)
@@ -246,41 +280,8 @@ function M.BuildOptions(panel, anchor)
         db.trainer.enabled = self:GetChecked() and true or false
     end)
 
-    addBox = CreateFrame("EditBox", "AloiseAurasTrainerAddBox", panel, "InputBoxTemplate")
-    addBox:SetAutoFocus(false)
-    addBox:SetSize(220, 20)
-    addBox:SetPoint("TOPLEFT", enableCB, "BOTTOMLEFT", 8, -16)
-
-    local addLabel = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    addLabel:SetPoint("BOTTOMLEFT", addBox, "TOPLEFT", -4, 2)
-    addLabel:SetText("Add extra (name or ID):")
-
-    local addBtn = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
-    addBtn:SetSize(60, 22)
-    addBtn:SetPoint("LEFT", addBox, "RIGHT", 8, 0)
-    addBtn:SetText("Add")
-    addBtn:SetScript("OnClick", function()
-        local ok, msg = AddEntry(addBox:GetText())
-        if ok then
-            addBox:SetText("")
-            RefreshList()
-        else
-            print("|cff33ff99AloiseAuras|r: " .. tostring(msg))
-        end
-    end)
-    addBox:SetScript("OnEnterPressed", function() addBtn:Click() end)
-
-    local clearBtn = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
-    clearBtn:SetSize(80, 22)
-    clearBtn:SetPoint("LEFT", addBtn, "RIGHT", 8, 0)
-    clearBtn:SetText("Clear all")
-    clearBtn:SetScript("OnClick", function()
-        wipe(db.trainer.spells)
-        RefreshList()
-    end)
-
     local listLabel = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    listLabel:SetPoint("TOPLEFT", addBox, "BOTTOMLEFT", -4, -16)
+    listLabel:SetPoint("TOPLEFT", enableCB, "BOTTOMLEFT", 0, -16)
     listLabel:SetText("Current whitelist:")
 
     listFS = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
@@ -290,8 +291,18 @@ function M.BuildOptions(panel, anchor)
     listFS:SetJustifyV("TOP")
     listFS:SetHeight(40)
 
-    local bottom = BuildClassSpellList(panel, listFS)
-    return bottom
+    local listBtn = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
+    listBtn:SetSize(200, 24)
+    listBtn:SetPoint("TOPLEFT", listFS, "BOTTOMLEFT", 0, -8)
+    listBtn:SetText("Class spell list...")
+    listBtn:SetScript("OnClick", function()
+        local p = BuildSpellListPopup()
+        if p then
+            if p:IsShown() then p:Hide() else p:Show() end
+        end
+    end)
+
+    return listBtn
 end
 
 function M.RefreshOptions()

@@ -7,7 +7,7 @@ wt.SpellsByLevel = {
 	[1] = {{id = 1494, cost = 10, train = true}},
 	[4] = {{id = 13163, cost = 100, train = true}, {id = 1978, cost = 100, train = true}},
 	[6] = {{id = 3044, cost = 100, train = true}, {id = 1130, cost = 100, train = true}},
-	[8] = {{id = 5116, cost = 200, train = true}, {id = 3127, cost = 200}, {id = 14260, cost = 200}},
+	[8] = {{id = 5116, cost = 200, train = true}, {id = 3127, cost = 200, train = true}, {id = 14260, cost = 200, train = true}},
 	[10] = {
 		{id = 13165, cost = 400, train = true},
 		{id = 13549, cost = 400, requiredIds = {1978}, train = true},

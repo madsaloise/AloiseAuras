@@ -62,7 +62,7 @@ local function TrySwap()
     if GetCursorInfo() then return end
 
     if cfg.improvedTrackingID and cfg.improvedTrackingID > 0 then
-        if not IsPlayerSpell(cfg.improvedTrackingID) then return end
+        --if not IsPlayerSpell(cfg.improvedTrackingID) then return end
     end
 
     if not UnitExists("target") or UnitIsDead("target") then return end

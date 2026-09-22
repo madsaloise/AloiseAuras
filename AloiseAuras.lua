@@ -114,7 +114,6 @@ local function BuildOptionsPanel()
 
     if Settings and Settings.RegisterCanvasLayoutCategory then
         local category = Settings.RegisterCanvasLayoutCategory(panel, AA.ADDON_NAME)
-        category.ID = AA.ADDON_NAME
         Settings.RegisterAddOnCategory(category)
         panel.category = category
     elseif InterfaceOptions_AddCategory then
@@ -127,7 +126,7 @@ end
 function AA:OpenOptions()
     if not optionsPanel then return end
     if Settings and Settings.OpenToCategory and optionsPanel.category then
-        Settings.OpenToCategory(optionsPanel.category.ID)
+        Settings.OpenToCategory(optionsPanel.category:GetID())
     elseif InterfaceOptionsFrame_OpenToCategory then
         InterfaceOptionsFrame_OpenToCategory(optionsPanel)
         InterfaceOptionsFrame_OpenToCategory(optionsPanel)

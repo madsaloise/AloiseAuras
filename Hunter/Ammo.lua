@@ -39,6 +39,23 @@ local function GetContainerFreeSlots(bag)
     return GetContainerNumFreeSlots(bag)
 end
 
+-- GetItemInfo was moved to the C_Item namespace; the global is nil on 12.x.
+local GetItemInfo = (C_Item and C_Item.GetItemInfo) or GetItemInfo
+
+-- GetMerchantItemInfo is nil on 12.x; C_MerchantFrame.GetItemInfo returns a table.
+-- Returns price, stackCount, numAvailable to match the legacy call sites.
+local function GetMerchantItemInfo(index)
+    if C_MerchantFrame and C_MerchantFrame.GetItemInfo then
+        local info = C_MerchantFrame.GetItemInfo(index)
+        if info then
+            return info.price, info.stackCount, info.numAvailable
+        end
+        return nil
+    end
+    local _, _, price, stackCount, numAvailable = _G.GetMerchantItemInfo(index)
+    return price, stackCount, numAvailable
+end
+
 -- Finds the quiver / ammo pouch bag. Returns bagID, freeSlots or nil.
 local function FindAmmoBag()
     for bag = 1, NUM_BAG_SLOTS or 4 do
@@ -116,7 +133,7 @@ local function RestockAmmo()
     local toBuy = freeSlots * stackSize
 
     -- Respect merchant-side limits (numAvailable == -1 means unlimited).
-    local _, _, price, quantity, numAvailable = GetMerchantItemInfo(index)
+    local price, quantity, numAvailable = GetMerchantItemInfo(index)
     quantity = quantity or 1
     if numAvailable and numAvailable > 0 then
         toBuy = math.min(toBuy, numAvailable * quantity)
