@@ -1,0 +1,13 @@
+## Interface: 110000
+## Title: AloiseAuras
+## Notes: Utility modules including Hunter-specific auras, tracking auto-swap, trainer auto-buy, and ammo restock.
+## Author: AloiseAuras
+## Version: 1.3.0
+## SavedVariables: AloiseAurasDB
+
+AloiseAuras.lua
+Hunter\Spells.lua
+Hunter\Cheetah.lua
+Hunter\Tracking.lua
+Hunter\Ammo.lua
+Modules\Trainer.lua

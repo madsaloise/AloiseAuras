@@ -1,0 +1,212 @@
+local _, wt = ...
+if (wt.currentClass ~= "HUNTER") then
+	return
+end
+
+wt.SpellsByLevel = {
+	[1] = {{id = 1494, cost = 10, train = true}},
+	[4] = {{id = 13163, cost = 100, train = true}, {id = 1978, cost = 100, train = true}},
+	[6] = {{id = 3044, cost = 100, train = true}, {id = 1130, cost = 100, train = true}},
+	[8] = {{id = 5116, cost = 200, train = true}, {id = 3127, cost = 200}, {id = 14260, cost = 200}},
+	[10] = {
+		{id = 13165, cost = 400, train = true},
+		{id = 13549, cost = 400, requiredIds = {1978}, train = true},
+		{id = 19883, cost = 400},
+		{id = 4187, cost = 10},
+		{id = 24545, cost = 10}
+	},
+	[12] = {
+		{id = 14281, cost = 600, requiredIds = {3044}, train = true},
+		{id = 20736, cost = 600},
+		{id = 136, cost = 600, requiredIds = {1515}, train = true},
+		{id = 2974, cost = 600, train = true},
+		{id = 4188, cost = 120},
+		{id = 24549, cost = 120}
+	},
+	[14] = {{id = 6197, cost = 1200}, {id = 1002, cost = 1200}, {id = 1513, cost = 1200}},
+	[16] = {{id = 13795, cost = 1500}, {id = 1495, cost = 1500, train = true}, {id = 14261, cost = 1500, requiredIds = {14260}}},
+	[18] = {
+		{id = 14318, cost = 1600, requiredIds = {13165}, train = true},
+		{id = 2643, cost = 1600, train = true},
+		{id = 13550, cost = 1600, requiredIds = {13549}, train = true},
+		{id = 19884, cost = 1600},
+		{id = 4189, cost = 400},
+		{id = 24550, cost = 400}
+	},
+	[20] = {
+		{id = 19434, cost = 2100, train = true},
+		{id = 14282, cost = 2100, requiredIds = {14281}, train = true},
+		{id = 5118, cost = 2100, train = true},
+		{id = 781, cost = 2100},
+		{id = 14274, cost = 2100, requiredIds = {20736}},
+		{id = 674, cost = 2100, train = true},
+		{id = 1499, cost = 2100, train = true},
+		{id = 3111, cost = 2100, requiredIds = {136}, train = true},
+		{id = 24493, cost = 440},
+		{id = 23992, cost = 440},
+		{id = 24446, cost = 440},
+		{id = 14917, cost = 440},
+		{id = 24492, cost = 440},
+		{id = 24488, cost = 440}
+	},
+	[22] = {{id = 14323, cost = 7000, requiredIds = {1130}, train = true}, {id = 3043, cost = 7000}},
+	[24] = {
+		{id = 1462, cost = 7200},
+		{id = 14262, cost = 7200, requiredIds = {14261}},
+		{id = 19885, cost = 7200},
+		{id = 4190, cost = 1400},
+		{id = 24551, cost = 1400}
+	},
+	[26] = {
+		{id = 14302, cost = 7400, requiredIds = {13795}},
+		{id = 3045, cost = 7400, train = true},
+		{id = 13551, cost = 7400, requiredIds = {13550},train = true},
+		{id = 19880, cost = 7400}
+	},
+	[28] = {
+		{id = 20900, cost = 7500, requiredIds = {19434}, train = true},
+		{id = 14283, cost = 7500, requiredIds = {14282}, train = true},
+		{id = 14319, cost = 7500, requiredIds = {14318}, train = true},
+		{id = 13809, cost = 7500, train = true},
+		{id = 3661, cost = 7500, requiredIds = {3111}}
+	},
+	[30] = {
+		{id = 13161, cost = 7600},
+		{id = 1242634, cost = 7600, requiredIds = {19306}, requiredTalentId = 19306},
+		{id = 15629, cost = 7600, requiredIds = {14274}},
+		{id = 5384, cost = 7600, train = true},
+		{id = 14269, cost = 7600, requiredIds = {1495}},
+		{id = 14326, cost = 7600, requiredIds = {1513}},
+		{id = 24497, cost = 1600},
+		{id = 24439, cost = 1600},
+		{id = 24447, cost = 1600},
+		{id = 4191, cost = 1600},
+		{id = 14918, cost = 1600},
+		{id = 24552, cost = 1600},
+		{id = 24502, cost = 1600},
+		{id = 24505, cost = 1600}
+	},
+	[32] = {
+		{id = 1543, cost = 10000},
+		{id = 14263, cost = 10000, requiredIds = {14262}},
+		{id = 19878, cost = 10000},
+		{id = 1299348, cost = 10000, requiredIds = {1299346}, requiredTalentId = 1299346}
+	},
+	[34] = {
+		{id = 14272, cost = 11000, requiredIds = {781}},
+		{id = 13813, cost = 11000, train = true},
+		{id = 13552, cost = 11000, requiredIds = {13551}, train = true}
+	},
+	[36] = {
+		{id = 20901, cost = 13000, requiredIds = {20900}, train = true},
+		{id = 14284, cost = 13000, requiredIds = {14283}, train = true}, --Arcane shot might stop here?
+		{id = 14303, cost = 13000, requiredIds = {14302}},
+		{id = 3662, cost = 13000, requiredIds = {3661}},
+		{id = 1293525, cost = 13000, requiredIds = {1293241}, requiredTalentId = 1293241, train = true},
+		{id = 3034, cost = 13000},
+		{id = 4192, cost = 2800},
+		{id = 24553, cost = 2800}
+	},
+	[38] = {{id = 14320, cost = 15000, requiredIds = {14319}, train = true},
+		   {id = 14267, cost = 15000, requiredIds = {2974}}},
+	[40] = {
+		{id = 1299445, cost = 16000, requiredIds = {13161}},
+		{id = 13159, cost = 16000, train = true},
+		{id = 15630, cost = 16000, requiredIds = {15629}},
+		{id = 14310, cost = 16000, requiredIds = {1499}},
+		{id = 14324, cost = 16000, requiredIds = {14323}, train = true},
+		{id = 8737, cost = 16000, train = true},
+		{id = 14264, cost = 16000, requiredIds = {14263}},
+		{id = 19882, cost = 16000},
+		{id = 19506, cost = 16000, requiredIds = {1299348}, requiredTalentId = 1299346},
+		{id = 1510, cost = 16000},
+		{id = 24500, cost = 3600},
+		{id = 24444, cost = 3600},
+		{id = 24448, cost = 3600},
+		{id = 14919, cost = 3600},
+		{id = 24503, cost = 3600},
+		{id = 24506, cost = 3600}
+	},
+	[42] = {
+		{id = 20909, cost = 22000, requiredIds = {1242634}, requiredTalentId = 19306},
+		{id = 13553, cost = 24000, requiredIds = {13552}, train = true},
+		{id = 4193, cost = 4800},
+		{id = 24554, cost = 4800}
+	},
+	[44] = {
+		{id = 20902, cost = 23000, requiredIds = {20901}, train = true},
+		{id = 14285, cost = 26000, requiredIds = {14284}, train = true},
+		{id = 14316, cost = 26000, requiredIds = {13813}, train = true},
+		{id = 13542, cost = 26000, requiredIds = {3662}},
+		{id = 14270, cost = 26000, requiredIds = {14269}}
+	},
+	[46] = {
+		{id = 20043, cost = 28000},
+		{id = 14304, cost = 28000, requiredIds = {14303}},
+		{id = 14327, cost = 28000, requiredIds = {14326}},
+		{id = 14279, cost = 28000, requiredIds = {3034}}
+	},
+	[48] = {
+		{id = 14321, cost = 32000, requiredIds = {14320}, train = true},
+		{id = 14273, cost = 32000, requiredIds = {14272}},
+		{id = 14265, cost = 32000, requiredIds = {14264}},
+		{id = 1310785, cost = 14000, requiredIds = {1310687}, requiredTalentId = 1310687},
+		{id = 1293526, cost = 29000, requiredIds = {1293525}, requiredTalentId = 1293241, train = true},
+		{id = 4194, cost = 6400},
+		{id = 24555, cost = 6400}
+	},
+	[50] = {
+		{id = 1299446, cost = 36000, requiredIds = {1299445}},
+		{id = 15631, cost = 36000, requiredIds = {15630}},
+		{id = 13554, cost = 36000, requiredIds = {13553}, train = true},
+		{id = 19879, cost = 36000},
+		{id = 20905, cost = 30000, requiredIds = {19506}, requiredTalentId = 1299346},
+		{id = 14294, cost = 36000, requiredIds = {1510}},
+		{id = 24501, cost = 7200},
+		{id = 24445, cost = 7200},
+		{id = 24449, cost = 7200},
+		{id = 14920, cost = 7200},
+		{id = 24504, cost = 7200},
+		{id = 24507, cost = 7200}
+	},
+	[52] = {
+		{id = 20903, cost = 20000, requiredIds = {20902}, train = true},
+		{id = 14286, cost = 40000, requiredIds = {14285}, train = true},
+		{id = 13543, cost = 40000, requiredIds = {13542}}
+	},
+	[54] = {
+		{id = 20910, cost = 37000, requiredIds = {20909}, requiredTalentId = 19306},
+		{id = 14317, cost = 42000, requiredIds = {14316}, train = true},
+		{id = 5041, cost = 8400},
+		{id = 24629, cost = 8400}
+	},
+	[56] = {
+		{id = 20190, cost = 46000, requiredIds = {20043}},
+		{id = 14305, cost = 46000, requiredIds = {14304}},
+		{id = 14266, cost = 46000, requiredIds = {14265}},
+		{id = 14280, cost = 46000, requiredIds = {14279}}
+	},
+	[58] = {
+		{id = 14322, cost = 48000, requiredIds = {14321}, train = true},
+		{id = 14325, cost = 48000, requiredIds = {14324}, train = true},
+		{id = 14271, cost = 48000, requiredIds = {14270}},
+		{id = 13555, cost = 48000, requiredIds = {13554}, train = true},
+		{id = 1310786, cost = 24000, requiredIds = {1310785}, requiredTalentId = 1310687},
+		{id = 14295, cost = 48000, requiredIds = {14294}}
+	},
+	[60] = {
+		{id = 20904, cost = 25000, requiredIds = {20903}},
+		{id = 14287, cost = 50000, requiredIds = {14286}},
+		{id = 1299447, cost = 48000, requiredIds = {1299446}},
+		{id = 15632, cost = 50000, requiredIds = {15631}},
+		{id = 14311, cost = 50000, requiredIds = {14310}},
+		{id = 13544, cost = 50000, requiredIds = {13543}},
+		{id = 1293527, cost = 42000, requiredIds = {1293526}, requiredTalentId = 1293241},
+		{id = 20906, cost = 42000, requiredIds = {20905}, requiredTalentId = 1299346},
+		{id = 14268, cost = 50000, requiredIds = {14267}},
+		{id = 5042, cost = 10000},
+		{id = 14921, cost = 10000},
+		{id = 24630, cost = 10000}
+	}
+}
+
