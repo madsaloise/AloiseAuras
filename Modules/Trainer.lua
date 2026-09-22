@@ -39,7 +39,7 @@ end
 local function ResolveEntry(input)
     local id = tonumber(input)
     if id then
-        local name = GetSpellInfo(id)
+        local name = HA.Spell.Name(id)
         return NormalizeName(name)
     end
     return NormalizeName(input)
@@ -139,7 +139,7 @@ function M.OnInit(dbref)
             for _, entries in pairs(wt.SpellsByLevel) do
                 for _, entry in ipairs(entries) do
                     if entry.train then
-                        local norm = NormalizeName(GetSpellInfo(entry.id))
+                        local norm = NormalizeName(HA.Spell.Name(entry.id))
                         if norm and not Contains(norm) then
                             table.insert(db.trainer.spells, norm)
                         end
@@ -197,7 +197,8 @@ local function BuildClassSpellList(parent, anchor)
         y = y + 20
 
         for _, entry in ipairs(wt.SpellsByLevel[lvl]) do
-            local name, _, icon = GetSpellInfo(entry.id)
+            local name = HA.Spell.Name(entry.id)
+            local icon = HA.Spell.Texture(entry.id)
             if name then
                 local cb = CreateFrame("CheckButton", nil, child, "InterfaceOptionsCheckButtonTemplate")
                 cb:SetPoint("TOPLEFT", 12, -y)

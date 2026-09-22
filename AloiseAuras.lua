@@ -36,6 +36,53 @@ function AA:IsHunter()
 end
 
 --------------------------------------------------------------------------------
+-- Spell API compat shim
+--   Wraps the C_Spell.* APIs preferred on Mainline 12.1+ with graceful
+--   fallbacks to the older globals. Modules should call through AA.Spell.
+--------------------------------------------------------------------------------
+AA.Spell = {}
+
+function AA.Spell.Name(id)
+    if C_Spell and C_Spell.GetSpellName then
+        return C_Spell.GetSpellName(id)
+    end
+    if C_Spell and C_Spell.GetSpellInfo then
+        local info = C_Spell.GetSpellInfo(id)
+        return info and info.name
+    end
+    return GetSpellInfo(id)
+end
+
+function AA.Spell.Texture(id)
+    if C_Spell and C_Spell.GetSpellTexture then
+        return C_Spell.GetSpellTexture(id)
+    end
+    return GetSpellTexture(id)
+end
+
+function AA.Spell.Cooldown(id)
+    if C_Spell and C_Spell.GetSpellCooldown then
+        local info = C_Spell.GetSpellCooldown(id)
+        if info then return info.startTime, info.duration end
+        return 0, 0
+    end
+    return GetSpellCooldown(id)
+end
+
+function AA.Spell.Cast(id)
+    if C_Spell and C_Spell.CastSpell then
+        C_Spell.CastSpell(id)
+        return
+    end
+    local name = AA.Spell.Name(id)
+    if name then CastSpellByName(name) end
+end
+
+function AA.Spell.IsPlayerCasting()
+    return UnitCastingInfo("player") ~= nil or UnitChannelInfo("player") ~= nil
+end
+
+--------------------------------------------------------------------------------
 -- Options panel
 --------------------------------------------------------------------------------
 local optionsPanel

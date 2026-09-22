@@ -9,8 +9,7 @@ local M = {}
 M.defaults = {
     tracking = {
         enabled = true,
-        -- Improved Tracking talent spell ID (Wowhead Classic/Forever). Set to 0
-        -- to disable the talent gate entirely.
+        -- Improved Tracking talent spell ID (Wowhead Classic/Forever).
         improvedTrackingID = 24293,
     },
 }
@@ -59,7 +58,7 @@ local function TrySwap()
     if not HA:IsHunter() then return end
 
     if InCombatLockdown() or UnitAffectingCombat("player") then return end
-    if ChannelInfo() or CastingInfo() then return end
+    if HA.Spell.IsPlayerCasting() then return end
     if GetCursorInfo() then return end
 
     if cfg.improvedTrackingID and cfg.improvedTrackingID > 0 then
@@ -75,10 +74,10 @@ local function TrySwap()
     local spellID = TRACK_SPELL_BY_TYPE[creatureType]
     if not spellID or not IsSpellKnown(spellID) then return end
 
-    local spellName = GetSpellInfo(spellID)
+    local spellName = HA.Spell.Name(spellID)
     if not spellName or IsAlreadyTracking(spellName) then return end
 
-    CastSpellByName(spellName)
+    HA.Spell.Cast(spellID)
 end
 
 --------------------------------------------------------------------------------

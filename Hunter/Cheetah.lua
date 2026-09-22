@@ -6,7 +6,6 @@ local HA = AloiseAuras
 local M = {}
 
 local CHEETAH_SPELL_ID = 186257
-local CHEETAH_NAME = GetSpellInfo(CHEETAH_SPELL_ID) or "Aspect of the Cheetah"
 
 M.defaults = {
     autoCast = true,
@@ -28,41 +27,41 @@ local icon, configMode
 --------------------------------------------------------------------------------
 -- Auto-cast logic
 --------------------------------------------------------------------------------
+local function HasCheetahAura()
+    -- Spell-ID lookups remain callable under 12.1 secure-aura rules; iterating
+    -- APIs like AuraUtil.FindAuraByName error while auras are secret.
+    if C_UnitAuras and C_UnitAuras.GetPlayerAuraBySpellID then
+        return C_UnitAuras.GetPlayerAuraBySpellID(CHEETAH_SPELL_ID) ~= nil
+    end
+    return false
+end
+
 local function CastCheetah()
     if not db.autoCast then return end
     if not HA:IsHunter() then return end
     if not IsPlayerSpell(CHEETAH_SPELL_ID) then return end
 
     if InCombatLockdown() then return end
-    if ChannelInfo() or CastingInfo() then return end
+    if HA.Spell.IsPlayerCasting() then return end
     if GetCursorInfo() then return end
 
     if IsInRaid() then return end
     if IsInGroup() and db.groupMode ~= "party" then return end
 
-    local start, duration = GetSpellCooldown(CHEETAH_NAME)
+    local start, duration = HA.Spell.Cooldown(CHEETAH_SPELL_ID)
     if start and duration and duration > 1.5 then return end
 
-    if AuraUtil and AuraUtil.FindAuraByName then
-        local name = AuraUtil.FindAuraByName(CHEETAH_NAME, "player", "HELPFUL")
-        if name then return end
-    end
+    if HasCheetahAura() then return end
 
-    CastSpellByName(CHEETAH_NAME)
+    HA.Spell.Cast(CHEETAH_SPELL_ID)
 end
 
 --------------------------------------------------------------------------------
 -- Icon frame
 --------------------------------------------------------------------------------
 local function GetCheetahAura()
-    if C_UnitAuras and C_UnitAuras.GetAuraDataBySpellName then
-        return C_UnitAuras.GetAuraDataBySpellName("player", CHEETAH_NAME, "HELPFUL")
-    end
-    if AuraUtil and AuraUtil.FindAuraByName then
-        local name, _, count, _, duration, expiration = AuraUtil.FindAuraByName(CHEETAH_NAME, "player", "HELPFUL")
-        if name then
-            return { name = name, applications = count, duration = duration, expirationTime = expiration }
-        end
+    if C_UnitAuras and C_UnitAuras.GetPlayerAuraBySpellID then
+        return C_UnitAuras.GetPlayerAuraBySpellID(CHEETAH_SPELL_ID)
     end
 end
 
@@ -76,13 +75,7 @@ end
 local function UpdateIcon()
     if configMode then return end
     local aura = GetCheetahAura()
-    local inCombat = InCombatLockdown() or UnitAffectingCombat("player")
-    if aura and inCombat then
-        if aura.duration and aura.duration > 0 and aura.expirationTime then
-            icon.cd:SetCooldown(aura.expirationTime - aura.duration, aura.duration)
-        else
-            icon.cd:Clear()
-        end
+    if aura then
         icon:Show()
     else
         icon:Hide()
@@ -116,7 +109,7 @@ local function BuildIcon()
 
     icon.tex = icon:CreateTexture(nil, "ARTWORK")
     icon.tex:SetAllPoints()
-    icon.tex:SetTexture(GetSpellTexture(CHEETAH_SPELL_ID))
+    icon.tex:SetTexture(HA.Spell.Texture(CHEETAH_SPELL_ID))
     icon.tex:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 
     icon.border = icon:CreateTexture(nil, "OVERLAY")
@@ -124,11 +117,6 @@ local function BuildIcon()
     icon.border:SetPoint("BOTTOMRIGHT", 2, -2)
     icon.border:SetColorTexture(0, 0, 0, 1)
     icon.border:SetDrawLayer("BACKGROUND")
-
-    icon.cd = CreateFrame("Cooldown", nil, icon, "CooldownFrameTemplate")
-    icon.cd:SetAllPoints()
-    icon.cd:SetDrawEdge(false)
-    icon.cd:SetHideCountdownNumbers(false)
 
     icon.drag = CreateFrame("Frame", nil, icon)
     icon.drag:SetAllPoints()
